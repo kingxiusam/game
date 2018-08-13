@@ -1,0 +1,132 @@
+1.erlang切换到指定目录的内置函数:cd(),eg:cd("C:/Users/Administrator/IdeaProjects/game/src")。
+2.
+  给Windows用户的一个小技巧.创建一个名为C:/program Files/er15.4.12/.Erlang的
+  文件（根据实际的安装路径进行调整）、然后在文件中加入如下的内容:
+  io:format("consulting . Erlang in "p-n",
+  [element(2. Fitle:get cwd()]).
+   %%Edit to the directory where you store your code
+  io:format("now in:"p-n", [element(2 ft11e:get. Cwdo))]).
+  保存之后，每次启动Erlang时，它如能自动切换到目录C:/WORAK.
+3.能够返回fun和接收fun的函数都称为高阶函数。
+4.lists.map(F,L)。将函数F应用到列表L。
+    13> L=[1,2,3,4].
+    [1,2,3,4]
+    14> lists:map(Double,L).
+    [2,4,6,8]
+
+5.list.filter(P,L).过滤返回包含L列表中满足函数P的元素的新列表。
+    13> L=[1,2,3,4].
+    [1,2,3,4]
+    16> P=fun(X)->X>3 end.
+    #Fun<erl_eval.6.90072148>
+    17> lists:filter(P,L).
+    [4]
+
+6.
+    div 取除数
+    rem 取余数
+7.将列表L转换为测试函数，测试传入的参数是否为L中的元素
+    MakeTest= fun(L)  ->(fun(X)  -> lists:member(X,L) end) end.
+    eg: 24> Fruit=[apples,milk,pears].
+        [apples,milk,pears]
+        25> IsFruit=MakeTest(Fruit).
+        #Fun<erl_eval.6.90072148>
+        26> IsFruit(apples).
+        true
+        27> IsFruit(apple).
+        false
+        28> IsFruit(milk).
+        true
+        29> IsFruit(pears).
+        true
+        30>
+
+8.
+    Muti=fun(Times)->(fun(X)->X*Times end) end.
+    eg:
+       Muti=fun(Times)->(fun(X)->X*Times end) end.
+       #Fun<erl_eval.6.90072148>
+       31> Muti(3).
+       #Fun<erl_eval.6.90072148>
+       32> Triple=Muti(3).
+       #Fun<erl_eval.6.90072148>
+       33> Triple(5).
+
+
+9.
+    if,switch,for,while  -------  模式匹配,高阶函数
+
+10.
+    %%自定义for循环实现
+    for(Max,Max,F)->[F(Max)];
+    for(I,Max,F)->[F(I)|for(I+1,Max,F)].
+
+    eg:
+        34> c(pp).
+        {ok,pp}
+        35> pp:for(1,10,fun(I)->I end).
+        [1,2,3,4,5,6,7,8,9,10]
+        36>pp:for(1,10,fun(X)->X*X end).
+           [1,4,9,16,25,36,49,64,81,100]
+
+11.    [{构造器}||{元组/用于匹配L中每个元素的模式}<-L]
+    eg:
+        45> [{Name,2*Number}||{Name,Number}<-Buy].
+        [{apples,2},{pears,4},{milk,6}]
+
+12.
+       列表解释的常见表达式 [X||qualifier1,qualifier2,qualifier3] qualifier可以是生成器和过滤器
+       51>[X||{a,X}<-[{a,4},{b,1},{c,5},{a,2},hello,"wow"]].
+       [4,2]
+13.
+        %%快速排序算法:以Pivot为基准进行排序
+        qsort([])->[];
+        qsort([Pivot|T])->qsort([X||X<-T,X=<Pivot])
+                ++[Pivot]++
+                qsort([X||X<-T,X>Pivot]).
+14.
+        %%生成毕达格拉斯三元组
+        pythag(N)->[{A,B,C}||
+        %%            使用生成器和过滤器
+                        A<-lists:seq(1,N),
+                        B<-lists:seq(1,N),
+                        C<-lists:seq(1,N),
+                        A+B+C=<N,
+                        A*A+B*B=:=C*C
+                    ].
+            eg:61> pp:pythag(9).
+               []
+               62> pp:pythag(30).
+               [{3,4,5},{4,3,5},{5,12,13},{6,8,10},{8,6,10},{12,5,13}]
+               63>
+
+15.
+        X--Y的--是列表的分离操作符（详见第5章）
+
+16.
+        用于强化模式匹配的结构
+
+17.
+        erlang中的短路布尔表达式：andalso,oralso
+
+18.
+        true(原子)断言在if表达式中的应用
+
+19.
+        record(记录)
+        记录的定义和操纵：
+
+        eg: 76> X=#todo{}.
+            #todo{status = reminder,who = joe,text = undefined}
+
+            75> rr("records.hrl").
+            [todo]
+            76> X=#todo.
+            * 1: syntax error before: '.'
+            76> X=#todo{}.
+            #todo{status = reminder,who = joe,text = undefined}
+            77> X1=#todo{status=urgent,text="fix errodata in file"}.
+            #todo{status = urgent,who = joe,
+                  text = "fix errodata in file"}
+            78> X2=X1#todo{status=done}.
+            #todo{status = done,who = joe,text = "fix errodata in file"}
