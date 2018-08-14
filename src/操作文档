@@ -130,3 +130,171 @@
                   text = "fix errodata in file"}
             78> X2=X1#todo{status=done}.
             #todo{status = done,who = joe,text = "fix errodata in file"}
+
+20.
+            记录是元组的伪装 使用rf()释放记录的定义
+            eg：9> X.
+               #todo{status = reminder,who = joe,text = undefined}
+               10> rf(todo).
+               ok
+               11> X.
+               {todo,reminder,joe,undefined}
+
+21.
+            遇到系统内部错误需要抛出异常时，可以在代码中显式抛出异常: throw(Exception),exit(Exception),erlang.error(Exception)(3个异常标签)。
+22.         finally  在try()表达式执行完之后执行
+                eg:
+                    46> c(try_code).
+                    {ok,try_code}
+                    47> try_code:try_caught().
+                    success
+                    success
+                    success
+                    success
+                    success
+                    [{1,noraml,a},
+                     {2,caught,thow,a},
+                     {3,caught,exit,a},
+                     {4,noraml,{"error",a}},
+                     {5,caught,error,a}]
+
+
+23.
+              %%包装math:sqrt函数,程序异常时按照指定格式抛出相关异常信息
+              eg:
+                  sqrt(Number) when Number<0 ->
+                      erlang:error({squareNegativeRootAgument,Number});
+                  sqrt(Number)-> math:sqrt(Number).
+
+24.
+                2进制数据为可打印的字符串，shell显示为字符串的形式，否则为一组整数。
+                    eg:
+                        56> <<99,97,116>>.
+                        <<"cat">>
+                        58> <<1,2,3>>.
+                        <<1,2,3>>
+
+25.
+                -spec 用于描述函数的参数和返回值类型
+                    eg:
+                        %% list_to_binary/1
+                        -spec list_to_binary(IoList) -> binary() when
+                              IoList :: iolist().
+                        list_to_binary(_IoList) ->
+                            erlang:nif_error(undefined).
+
+                63> term_to_binary(["boy",person,23]).
+                <<131, 108,0,0,0, 3,107,0,3,98,111,121,100,0,6,112,101,114,115,111,110,97,23,  106>>
+                64> term_to_binary({"boy",person,23}).
+                <<131,104,        3,107,0,3,98,111,121,100,0,6,112,101,114,115, 111,110,97,23      >>
+
+26.比特语法
+
+                77> Red=2.
+                2
+                78> Green=61.
+                61
+                79> Blue=20.
+                20
+                80> Mem = <<Red:5,Green:6,Blue:5>>.
+                <<23,180>>
+                82> <<C1:5,C2:6,C3:5>>=Mem.
+                <<23,180>>
+                83> C1.
+                2
+                84> C2.
+                61
+                85> C3.
+
+
+27.                87> apply(lib_misc,max,[2,3])   <=> lib_misc:max(2,3).
+
+28.             导出该模块的所有函数
+                    -compile(export_all)
+
+29.
+                begin end块的值就是块中最后一个表达式的值
+
+30.             ~w是指对列表进行原封不动的输出,124> io:format("~w",["hello""hi"]).
+                [104,101,108,108,111,104,105]
+
+                133> io:format("~w",[104,101,108,108,111,104,105]).
+                ** exception error: bad argument
+                     in function  io:format/3
+
+                134> io:format("~w",["hello","hi"]).
+                ** exception error: bad argument
+                     in function  io:format/3
+
+
+
+
+31.             %% get/0 获取[{Key, Val}]列表形式的字典
+                -spec get() -> [{Key, Val}] when
+                      Key :: term(),
+                      Val :: term().
+                get() ->
+                    erlang:nif_error(undefined).
+
+                %% get/1 获取指定Key的Value值
+                -spec get(Key) -> Val | undefined when
+                      Key :: term(),
+                      Val :: term().
+                get(_Key) ->
+                    erlang:nif_error(undefined).
+
+                %% get_keys/1 获取值为Val的Key列表
+                -spec get_keys(Val) -> [Key] when
+                      Val :: term(),
+                      Key :: term().
+                get_keys(_Val) ->
+                    erlang:nif_error(undefined).
+
+                %% erase/0 返回[{Key, Val}],并删除整个进程字典
+                -spec erase() -> [{Key, Val}] when
+                      Key :: term(),
+                      Val :: term().
+                erase() ->
+                    erlang:nif_error(undefined).
+
+                %% erase/1 返回Key对应得值Val/undefined,并删除Key对应得Val值
+                -spec erase(Key) -> Val | undefined when
+                      Key :: term(),
+                      Val :: term().
+                erase(_Key) ->
+                    erlang:nif_error(undefined).
+
+32.
+                引用: erlang:make_ref()创建引用,适用于创建唯一标签的场合。
+
+33.             布尔表达式           or      and
+                短路布尔表达式     oralso  andalso
+
+34.             下划线变量,在定义的常规变量将未被使用时，使用下划线变量可避免潜在的bug和警告
+
+35.             新增目录Dir到加载路径的头部 shell命令: -pa Dir
+                -spec add_patha(Dir) -> add_path_ret() when
+                      Dir :: file:filename().
+                add_patha(Dir) when is_list(Dir) -> call({add_path,first,Dir}).
+
+                新增目录Dir到加载路径的尾部 shell命令：-pz Dir
+                -spec add_pathz(Dir) -> add_path_ret() when
+                      Dir :: file:filename().
+                add_pathz(Dir) when is_list(Dir) -> call({add_path,last,Dir}).
+36.
+                使用Makefile自动编译：
+
+
+
+                经过这些步露，最后我们得到一个非常精简的make file,大概就像下面一样:
+                .SUFFIXES: , erl . Beam
+                .erl. Beam:
+                erlc -W $<
+                ERL . Erl -boot start clean
+                MOOS = module l module2 module3
+                all:compile
+                .
+                .
+                .
+37.
+                3个新原语：spawn,send(使用!操作符),receiver
