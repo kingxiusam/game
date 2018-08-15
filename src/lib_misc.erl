@@ -23,7 +23,11 @@
 -export([odds_and_evens_acc/1]).
 -export([match/1]).
 -export([some_funx/1]).
-
+-export([sleep/1]).
+-export([flush_buffer/0]).
+-export([priority/0]).
+-export([fun_infinity/0]).
+-export([on_exit/2]).
 
 
 game()->
@@ -66,7 +70,7 @@ perms(L)->[[H|T]||H<-L,T<-perms(L--[H])].
 
 %%断言的使用
 max(X,Y) when is_integer(X),X>Y -> X;
-max(X,Y)->Y.
+max(_X,Y)->Y.
 
 
 %%case表达式
@@ -76,7 +80,7 @@ filter(P,[H|T])->
         true->[H|filter(P,T)];
         false->filter(P,T)
     end;
-filter(P,[])->[].
+filter(_P,[])->[].
 
 odds_and_evens(L)->
     Odds=[X||X<-L,X rem 2 =:=0],
@@ -112,3 +116,79 @@ some_funx(X)->
     {P,_Q}=some_funx(X),
 %%    io:format("_Q=~p~n",_Q),
     P.
+
+
+%%只有超时的receive
+sleep(T)->
+    receive
+    after T->
+        true
+    end.
+
+%%永远不会触发超时
+fun_infinity()->
+    receive
+    after infinity->
+            true
+    end.
+
+
+
+%%清空进程的所有消息
+flush_buffer()->
+    receive
+        _Any->
+            flush_buffer()
+    after 0->true
+    end.
+
+
+%%优先接收的超时为0函数
+
+priority()->
+    receive
+        {alarm,x}->
+            {alarm,x}
+    after 0->
+        receive
+            Any->
+                Any
+        end
+    end.
+
+
+%%错误程序的处理
+on_exit(Pid,Fun)->
+    spawn(fun()->
+%%        将创建的进程转变成系统进程
+        process_flag(trap_exit,true),
+%%        将Pid进程跟新建进程进行连接
+        link(Pid),
+
+        receive
+            {'EXIT',Pid,Why}->
+                Fun(Why)
+        end
+
+    end).
+
+%%    shell测试脚本
+%%        45> F=fun()->receive
+%%        X->list_to_atom(X)
+%%        end
+%%        end.
+%%        #Fun<erl_eval.20.90072148>
+%%        46> PID=spawn(F).
+%%        <0.136.0>
+%%        49> c(lib_misc).
+%%        {ok,lib_misc}
+%%        50> lib_misc:on_exit(PID,fun(Why)->io:format("~pdie with~p~n",[PID,Why])end).
+%%        <0.153.0>
+%%        51> PID ! hello.
+%%        <0.136.0>die with{badarg,[{erlang,list_to_atom,[hello],[]}]}
+%%        hello
+%%        52>
+%%        =ERROR REPORT==== 15-Aug-2018::17:15:32 ===
+%%        Error in process <0.136.0> with exit value: {badarg,[{erlang,list_to_atom,[hello],[]}]}
+
+

@@ -298,3 +298,86 @@
                 .
 37.
                 3个新原语：spawn,send(使用!操作符),receiver
+                spawn(Fun)创建新的并发进程对函数Fun进行求值,并返回进程id(Pid)--处理进程,
+                eg:
+                    3> Pid=spawn(fun area_server:loop/0).
+                    <0.39.0>
+
+                Pid ! Msg的值被定义为Msg,客户机向处理进程发送请求,Msg包含客户机请求信息(self(),A,B),可以是客户机自己的进程ID,其他请求参数
+
+
+38.
+                erlang每个进程都有自己的一个邮箱，向进程发送的消息都会被送入邮箱中
+                        email    pattern1,pattern2    action
+
+                        message1        not match        remove /save in savequeue
+                        message2        not match        remove /save in savequeue
+                        message3        not match        remove /save in savequeue
+
+                        message4        match              未匹配消息message从保存队列savequue释放,重新放回进程邮箱
+
+
+39.使用BIF管理进程
+
+                %% register/2 将进程PidOrPort注册名为RegName的原子
+                -spec register(RegName, PidOrPort) -> true when
+                      RegName :: atom(),
+                      PidOrPort :: port() | pid().
+                register(_RegName, _PidOrPort) ->
+                    erlang:nif_error(undefined).
+
+                %% registered/0 返回系统中已注册的名称列表
+                -spec registered() -> [RegName] when
+                      RegName :: atom().
+                registered() ->
+                    erlang:nif_error(undefined).
+
+                %% unregister/1 移除RegName对应进程的所有注册信息
+                -spec unregister(RegName) -> true when
+                      RegName :: atom().
+                unregister(_RegName) ->
+                    erlang:nif_error(undefined).
+
+                %% whereis/1 判断RegName是否被其他进程注册,有则返回Pid，否则返回undefined。
+                -spec whereis(RegName) -> pid() | port() | undefined when
+                      RegName :: atom().
+                whereis(_RegName) ->
+                    erlang:nif_error(undefined).
+
+
+40.尾递归技术
+            编译尾递归函数时函数最后一个调用语句会被替换为简单的跳转指令,跳转到函数的开头部分。
+            使用MFA模式动态更新运行进程：spawn(Module,Func,Args)
+
+
+            显式的向进程Pid发送一个退出信号：exit(Pid,X).
+            kill信号主要用于僵尸进程(谨慎使用)
+
+41.捕获进程退出的编程模式
+
+
+
+
+            1.模式1:我不在乎创建的进程是否崩溃
+            下面这个进程仅使用spawn来创建一个并行进程:
+            Pid . spawn(fun() ->. . End)
+            如果没有其他语句。那么如果这个被生成的进程崩溃，当前进程会毫无察觉地继续执行自己
+            的其他任务。
+            2.模式2:如果我创建的进程崩溃那么我也自行消亡
+            严格地讲，这里应改为"如果我创建的进程非正常的崩溃"。要达到这个目的，必须使用
+            Spawn link来创建并行进程，而且一定不能在这之前将进程设为退出信号捕获状态。我们应该
+            这么写:
+            Pid - spawn_link(fun() - . . . End)
+            此时，如果新生成的进程异常崩溃而发送非正常的退出信号，当前进程也会随之消亡。
+            3.模式3:如果我创建的进程崩溃我需要处理错误
+            在这种情况下，就要使用:spawn_link和trap_exit,代码如下:
+            process_flag(trap_exit,true),
+            Pid=spawn_link(fun() -> . . . End),
+            loop (. . . ).
+            1oop(state) ->
+                        receive
+                        {'EXIT', pid, reason] ->
+                        %%do something with the error
+                        1oop(state1);
+                        ...
+                        end
