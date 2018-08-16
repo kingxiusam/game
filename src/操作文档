@@ -207,7 +207,7 @@
                 85> C3.
 
 
-27.                87> apply(lib_misc,max,[2,3])   <=> lib_misc:max(2,3).
+27.             模块的函数调用   87> apply(lib_misc,max,[2,3])   <=>  lib_misc:max(2,3).
 
 28.             导出该模块的所有函数
                     -compile(export_all)
@@ -381,3 +381,61 @@
                         1oop(state1);
                         ...
                         end
+
+42.         使用标准库rpc模块的call函数调用指定模块的函数：rpc:call(NodeName,Module,Function,[Arg...])
+
+43          具有相同cookie且彼此互相连接的集称为Erlang集群。
+
+44.
+            互相通信的节点必须要有相同的logicookie设置Cookie：
+                1.拷贝.erlang.cookie文件
+                2.erl -setcookie c
+                3.erlang:set_cookie(node(),c)将本地节点的cookie设置为原子c
+
+45.         以write的方式打开game.dat文件,并返回IO设备S3。
+            {ok,S3}=file:open("game.dat",write).
+            使用writeIO 向文件写入格式化数据：
+                eg：
+                io:format(S3,"~s",["hello"]).
+
+
+            ets:new(Name, Options)创建新表
+            dets:open_file()打开已经存在的表
+
+46.         dets:lookup(TableName,Key)在表中查找匹配key的元组列表[tuple()]
+            释放表：dets:close(),dets:delete()
+
+            ets,dets用于存储元组,默认元组中的第一个元素为表的键。插入元组和获取元组都是基于表的键来操作的。
+
+            获取表的指定(Item)信息：
+                -spec info(Tab, Item) -> Value | undefined when
+                      Tab :: tab(),
+                      Item :: compressed | fixed | heir | keypos | memory
+                            | name | named_table | node | owner | protection
+                            | safe_fixed | size | stats | type,
+                      Value :: term().
+
+
+45.
+            ~p 完整打印参数
+            ~w 以标准语法写入数据
+            ~s 参数是字符串
+
+46.三字索引
+            由三个字母组成     在向表中插入索引的时候通常使用<<A,B,C>>表示三字索引
+
+47.
+            %%  测量指定模块的指定函数的执行时间
+            %% Measure the execution time (in microseconds) for an MFA.
+            %%
+            -spec tc(Module, Function, Arguments) -> {Time, Value} when
+                  Module :: module(),
+                  Function :: atom(),
+                  Arguments :: [term()],
+                  Time :: integer(),
+                  Value :: term().
+            tc(M, F, A) ->
+                Before = os:timestamp(),
+                Val = apply(M, F, A),
+                After = os:timestamp(),
+                {now_diff(After, Before), Val}.

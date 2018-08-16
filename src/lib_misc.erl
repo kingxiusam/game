@@ -28,7 +28,8 @@
 -export([priority/0]).
 -export([fun_infinity/0]).
 -export([on_exit/2]).
-
+-export([unconsult/2]).
+-export([string2value/1]).
 
 game()->
     io:fwrite("this is app print\n").
@@ -192,3 +193,10 @@ on_exit(Pid,Fun)->
 %%        Error in process <0.136.0> with exit value: {badarg,[{erlang,list_to_atom,[hello],[]}]}
 
 
+unconsult(File,L)->
+    {ok,S}=file:open(File,write),
+    lists:foreach(fun(X)->io:format(S,"~p.~n",[X])end,L).
+
+
+%%计算并返回算术表达式的具体值
+string2value(Str)->Str.
