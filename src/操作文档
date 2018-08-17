@@ -439,3 +439,56 @@
                 Val = apply(M, F, A),
                 After = os:timestamp(),
                 {now_diff(After, Before), Val}.
+
+
+            -opaque dict(Key, Value) :: #dict{segs :: segs(Key, Value)}.
+
+                -spec store(Key, Value, Dict1) -> Dict2 when
+                      Dict1 :: dict(Key, Value),
+                      Dict2 :: dict(Key, Value).
+
+                store(Key, Val, D0) ->
+                    Slot = get_slot(D0, Key),
+                    {D1,Ic} = on_bucket(fun (B0) -> store_bkt_val(Key, Val, B0) end,
+                			D0, Slot),
+                    maybe_expand(D1, Ic).
+
+
+
+            -spec new() -> dict().
+            new() ->
+                Empty = mk_seg(?seg_size),
+                #dict{empty=Empty,segs={Empty}}.
+
+
+
+            gen_server:
+                gen_server:start_link 会启动本地服务器
+
+                start_link(Mod, Args, Options) ->
+                    gen:start(?MODULE, link, Mod, Args, Options).
+
+                创建一个名为Name的通用服务器程序,回调模块为Mod ,Options控制了程序的操作行为,然后调用Mod:init(Args)来启动程序
+                start_link(Name, Mod, Args, Options) ->
+                    gen:start(?MODULE, link, Name, Mod, Args, Options).
+
+
+
+            gen：
+                -spec start(module(), linkage(), emgr_name(), module(), term(), options()) ->
+                    start_ret().
+                start(GenMod, LinkP, Name, Mod, Args, Options) ->
+                    case where(Name) of
+                    undefined ->
+                        do_spawn(GenMod, LinkP, Name, Mod, Args, Options);
+                    Pid ->
+                        {error, {already_started, Pid}}
+                    end.
+
+                -spec start(module(), linkage(), module(), term(), options()) -> start_ret().
+                start(GenMod, LinkP, Mod, Args, Options) ->
+                    do_spawn(GenMod, LinkP, Mod, Args, Options).
+
+            ?MODULE展开的时候会对应此模块的名称
+
+            -behavior(gen_server).使用该关键字后,在忘记定义回调函数时，编译器会报错

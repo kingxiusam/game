@@ -30,6 +30,7 @@
 -export([on_exit/2]).
 -export([unconsult/2]).
 -export([string2value/1]).
+-export([min/2]).
 
 game()->
     io:fwrite("this is app print\n").
@@ -72,6 +73,11 @@ perms(L)->[[H|T]||H<-L,T<-perms(L--[H])].
 %%断言的使用
 max(X,Y) when is_integer(X),X>Y -> X;
 max(_X,Y)->Y.
+
+
+min(X,Y) when is_integer(X),is_integer(Y),X<Y -> X;
+min(_X,Y)->Y.
+
 
 
 %%case表达式
