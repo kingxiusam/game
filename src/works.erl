@@ -16,7 +16,8 @@
 -export([sum/1]).
 -export([insect/2]).
 -export([concat/2]).
--export([generation_id/0]).
+%%-export([generation_id/0]).
+-export([mul_min/1]).
 
 
 sum(L)          -> sum(L, 0).
@@ -47,10 +48,56 @@ concat(String1,String2)->
 
 
 
+mul_min(L)->
 
-%%注册生成自增id的进程
-generation_id()->
-        register(generation,spawn(fun loop/0)).
+
+
+    Size=length(L),
+
+
+    L1=lists:sublist(L,0,Size/3),
+    L2=lists:sublist(L,Size/3,Size/3),
+    L3=lists:sublist(L,Size/3*2,Size-length(L2)-length(L1)),
+
+    Pid1=spawn(works,fun loop_min/1),
+    Pid2=spawn(works,fun loop_min/1),
+    Pid3=spawn(works,fun loop_min/1),
+
+%%    从当前进程(主进程)发送消息给子进程
+    Pid1 ! {self(),L1},
+    Pid2 ! {self(),L2},
+    Pid3 ! {self(),L3},
+
+
+
+    receive
+        {Pid1,Min1}->Min1;
+
+        {Pid2,Min2}->Min2;
+
+        {Pid3,Min3}->Min3
+    end.
+
+
+
+loop_min(L)->
+
+    receive
+        {From,L}->
+            Min=lists:min(L),
+            From ! {self(),Min},
+            loop_min(L)
+    end.
+
+
+
+
+
+
+
+
+
+
 
 
 

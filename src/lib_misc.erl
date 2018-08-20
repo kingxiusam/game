@@ -29,7 +29,6 @@
 -export([fun_infinity/0]).
 -export([on_exit/2]).
 -export([unconsult/2]).
--export([string2value/1]).
 -export([min/2]).
 
 game()->
@@ -205,4 +204,3 @@ unconsult(File,L)->
 
 
 %%计算并返回算术表达式的具体值
-string2value(Str)->Str.
