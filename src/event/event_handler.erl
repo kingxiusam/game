@@ -14,7 +14,7 @@
 -export([event/2]).
 -export([add_handler/2]).
 -export([my_handler/1]).
-
+-export([make/1]).
 
 make(Name)->register(Name,spawn(fun()->my_handler(fun no_operate/1)end)).
 
