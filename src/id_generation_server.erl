@@ -19,38 +19,44 @@
 
 -export([init/1,handle_call/3,handle_cast/2,handle_info/2,terminate/2,code_change/3]).
 %% API
+-export([start_multi_process/0]).
 -export([get_newId/1]).
 -export([start_link/0]).
+
+
+
+
+%%同时开启多个进程
+start_multi_process()->
+    spawn(id_generation_server,get_newId,[client]),
+    spawn(id_generation_server,get_newId,[client]),
+    spawn(id_generation_server,get_newId,[client]).
 
 %%注册生成自增id的进程
 start_link()->
     gen_server:start({local,?MODULE},?MODULE,[],[]).
 
+get_newId(IdType)->
+    mnesia:force_load_table(ids),
+    Id=gen_server:call(?MODULE,{get_newId,IdType}),
+    io:format("get the generation id is:~p~n",[Id]).
 
 
+%%the callback interface
 init([]) ->
     mnesia:start(),
     io:format("start the mnesia db"),
     mnesia:create_schema([node()]),
-
-    case endmnesia:create_table(ids,[{type,ordered_set},
+    case mnesia:create_table(ids,[{type,ordered_set},
         {attributes,record_info(fields,ids)},
-        {disc_copies,[]}]) of
-
-
-    {atomic,ok}->{atomic,ok};
-    {error,Reason}->io:format("create table error about:~p~n",[Reason])
-
+        {disc_copies,[]}
+    ]) of
+        {atomic,ok}->
+            {atomic,ok};
+        {error,Reason}->
+            io:format("create table error:~p~n",[Reason])
     end,
     {ok,#state{}}.
-
-
-
-
-get_newId(IdType)->
-    mnesia:force_load_table(ids),
-    gen_server:call(?MODULE,{get_newId,IdType}).
-
 
 
 handle_cast(_From,State)->
@@ -68,7 +74,7 @@ code_change(_OldVer,State,_Ext)->
 
 
 %%generate new Id for given type
-handle_call({getid,IdType},_From,State)->
+handle_call({get_newId,IdType},_From,State)->
     F=fun()->
         Result=mnesia:read(ids,IdType,write),
         case Result of

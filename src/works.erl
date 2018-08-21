@@ -16,8 +16,8 @@
 -export([sum/1]).
 -export([insect/2]).
 -export([concat/2]).
-%%-export([generation_id/0]).
--export([mul_min/1]).
+-export([loop_min/0]).
+-export([mul_min/2]).
 
 
 sum(L)          -> sum(L, 0).
@@ -48,45 +48,60 @@ concat(String1,String2)->
 
 
 
-mul_min(L)->
-
-
+mul_min(L,State)->
 
     Size=length(L),
+%%    输入列表的元素个数需为3的倍数
+    L1=lists:sublist(L,1,Size div 3),
+    L2=lists:sublist(L,(Size div 3)+1,Size div 3),
+    L3=lists:sublist(L,(Size div 3)*2+1,Size-length(L2)-length(L1)),
 
-
-    L1=lists:sublist(L,0,Size/3),
-    L2=lists:sublist(L,Size/3,Size/3),
-    L3=lists:sublist(L,Size/3*2,Size-length(L2)-length(L1)),
-
-    Pid1=spawn(works,fun loop_min/1),
-    Pid2=spawn(works,fun loop_min/1),
-    Pid3=spawn(works,fun loop_min/1),
-
+    Pid1=spawn(fun()->loop_min()end),
+    Pid2=spawn(fun()->loop_min()end),
+    Pid3=spawn(fun()->loop_min()end),
 %%    从当前进程(主进程)发送消息给子进程
     Pid1 ! {self(),L1},
     Pid2 ! {self(),L2},
     Pid3 ! {self(),L3},
 
-
-
     receive
-        {Pid1,Min1}->Min1;
+    %%        主进程接收子进程的返回值
 
-        {Pid2,Min2}->Min2;
+        {Pid1,Min1} when State==1 ->put(min,Min1)
+        ,mul_min(L,2)
+    ;
 
-        {Pid3,Min3}->Min3
+        {Pid2,Min2} when State==2 ->
+            Temp2 = get(min),
+
+            if
+                Temp2 > Min2 -> put(min,Min2);
+                    true->get(min)
+            end
+        ,mul_min(L,3)
+    ;
+
+        {Pid3,Min3} when State==3 ->Min3,
+            Temp3 = get(min),
+            if
+            Temp3 > Min3 -> put(min,Min3);
+                true->get(min)
+            end,
+            io:format("the min of list is :~p~n",[get(min)])
+%%            递归出口
+        ,mul_min(L,0)
     end.
 
 
 
-loop_min(L)->
+loop_min()->
+
 
     receive
         {From,L}->
             Min=lists:min(L),
             From ! {self(),Min},
-            loop_min(L)
+            loop_min()
     end.
 
 
