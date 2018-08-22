@@ -9,9 +9,8 @@
 -module(mul_min_gen_server).
 -behavior(gen_server).
 -export([init/1,handle_call/3,handle_cast/2,handle_info/2,terminate/2,code_change/3]).
--export([loop/0]).
 -export([mul_min/2]).
--export([loop_min/0]).
+-export([loop_min/1]).
 -author("Administrator").
 
 
@@ -32,23 +31,24 @@ mul_min(L,State)->
 
 
     %%使用该函数通过gen_server启动多个进程
-    Pid1=gen_server:start_link(?MODULE,[],[]),
-    Pid2=gen_server:start_link(?MODULE,[],[]),
-    Pid3=gen_server:start_link(?MODULE,[],[]),
+%%    Pid1=gen_server:start_link(?MODULE,[L1],[]),
+%%    Pid2=gen_server:start_link(?MODULE,[L2],[]),
+%%    Pid3=gen_server:start_link(?MODULE,[L3],[]),
+
+    Pid1=spawn(mul_min_gen_server,loop_min,[L1]),
+    Pid2=spawn(mul_min_gen_server,get_newId,[L2]),
+    Pid3=spawn(mul_min_gen_server,get_newId,[L3]),
 
     io:format("pid : ~p~n",[Pid1]),
     io:format("pid : ~p~n",[Pid2]),
     io:format("pid : ~p~n",[Pid3]),
 
 
-    gen_server:call(),
-
     receive
     %%        主进程接收子进程的返回值
 
         {Pid1,Min1} when State==1 ->put(min,Min1)
-            ,mul_min(L,2)
-    ;
+            ,mul_min(L,2);
 
         {Pid2,Min2} when State==2 ->
             Temp2 = get(min),
@@ -56,9 +56,8 @@ mul_min(L,State)->
             if
                 Temp2 > Min2 -> put(min,Min2);
                 true->get(min)
-            end
-            ,mul_min(L,3)
-    ;
+            end,
+            mul_min(L,3);
 
         {Pid3,Min3} when State==3 ->Min3,
             Temp3 = get(min),
@@ -72,10 +71,17 @@ mul_min(L,State)->
     end.
 
 
+
+
+%%发起计算最小值服务器的远程调用
+loop_min(L)->
+    Min=gen_server:call(?MODULE,{loop_min,L}),
+    io:format("the min: ~p",[Min]).
+
 %%the callback interface
 init([]) ->
 
-    {ok,ets:new(?MODULE,[])}.
+    {ok,put(min,0)}.
 
 
 handle_cast(_From,State)->
@@ -94,25 +100,17 @@ code_change(_OldVer,State,_Ext)->
 
 
 %%计算所给列表的最小值 -callback
-handle_call({loop},_From,Tab)->
+handle_call({loop_min,L},_From,State)->
 
-    Reply= case  true of
-               true -> io:format("hello")
-           end,
-    {reply,Reply,Tab}.
-
-
-
-
-loop()->
     receive
         {From,L}->
-        Min=lists:min(L),
-        From ! {self(),Min},
-        loop()
-    end.
+            Min=lists:min(L),
+            put(temp,Min),
+            From ! {self(),Min}
+    end,
+    {reply,get(temp),State}.
 
 
-loop_min()->gen_server:call(?MODULE,{loop}).
+
 
 
