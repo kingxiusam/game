@@ -498,3 +498,18 @@
             erlang中只有两种类型的共享内存：共享的ETS表和DETS表，
                 public：所有知道这个表标志的进程都可以读写这个表
                 protect：只有一个进程(他的创建者)可以写入数据，多个进程可进行读操作。
+
+
+50.         erlang数据库mnesia：
+                mnesia:force_load_table(ids) 加载表
+                mnesia:start()启动数据库
+                mnesia:create_table 创建表
+                mnesia:create_schema([node()]),创建视图
+                mnesia:read(ids,IdType,write),从ids读取指定IdType的数据
+                mnesia:write(ids,NewColumn,write),将记录NewColumn写入ids
+                mnesia:transaction(F) 为操作F提供事务机制
+                mnesia:table(shop):
+                    -record(shop,{item,quality,cost})
+                    qlc(query list comprehensions)查询列表解析
+                    qlc:q([X||X<-mnesia:table(shop)])从mnesia的shop中获取X(每行作为一个X),用这些X构成一个列表
+                    qlc:q([{X#shop.item,X#shop.quality}]||X<-mnesia:table(shop)])从mnesia的shop中获取指定列组成的元组,用这些元组构成一个列表
