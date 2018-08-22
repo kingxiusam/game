@@ -10,16 +10,20 @@
 -author("Administrator").
 
 %% API
--export([start/2]).
--export([talk/1]).
+-export([start/3]).
+-export([talk/2]).
 
-start(IP, Port) ->
+
+start(IP, Port,ClientId) ->
     {ok, Socket} = gen_tcp:connect(IP, Port, [binary, {packet, 4}]),
-    talk(Socket).
+    talk(Socket,ClientId).
 
 
 
-talk(Socket)->
-    Msg=io:get_line("input the message："),
-    ok=gen_tcp:send(Socket,term_to_binary(Msg)),
-    talk(Socket).
+talk(Socket,ClientId)->
+    Id=integer_to_list(ClientId),
+    io:format("[client "++Id++" input process]"),
+    Msg=io:get_line("input："),
+    ok=gen_tcp:send(Socket,term_to_binary("[client"++Id++"]:"++Msg)),
+    talk(Socket,ClientId)
+.

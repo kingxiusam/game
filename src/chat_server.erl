@@ -21,12 +21,14 @@ start(ClientPort)->
 do_accept(LSocket)->
     {ok,Socket}=gen_tcp:accept(LSocket),
     spawn(fun()->handle_client(Socket)end),
+%%    给客户端管理进程发送{connect,Socket}信息请求建立socket连接
     client_manager ! {connect,Socket},
     do_accept(LSocket).
 
 
 handle_client(Socket)->
     case gen_tcp:recv(Socket, 0) of
+%%        发送数据到客户端管理进程
         {ok,Data}->
             client_manager ! {data,Data},
             handle_client(Socket);
@@ -40,7 +42,7 @@ manage_clients(Sockets)->
 
     receive
         {connect,Socket}->
-            io:format("建立socket连接~w~n",[Socket]),
+            io:format("connect the socket~w~n",[Socket]),
             SocketList=[Socket|Sockets],
             manage_clients(SocketList);
 
@@ -49,6 +51,7 @@ manage_clients(Sockets)->
             manage_clients(SocketList);
 
         {data,Data}->
+%%            将数据转发给所有连接客户端client
             send_data(Sockets,Data),
             SocketList=Sockets,
             manage_clients(SocketList)

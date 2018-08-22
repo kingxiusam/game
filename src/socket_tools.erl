@@ -36,7 +36,7 @@ receive_data(Socket,SoFar)->
     end.
 
 start_nano_server()->
-    {ok,Listen}=gen_tcp:listen(8080,[binary,{packet,4}]),
+    {ok,Listen}=gen_tcp:listen(8080,[binary,{packet,4},{reuseaddr,true},{active,true}]),
 %%    函数返回Socket
     {ok,Socket}=gen_tcp:accept(Listen),
 %%    accept返回后立即关闭监听套接字
@@ -53,16 +53,17 @@ start_nano_client(Str)->
         {tcp,Socket,Bin}->
             io:format("Client received binary data ~p~n",[Bin]),
             Val=binary_to_term(Bin),
-            io:format("Client received value is ~p~n",[Val])
+            io:format("Client received value is ~p~n",[Val]),
+            gen_tcp:close(Socket)
     end.
 
 loop(Socket)->receive
                   {tcp,Socket,Bin}->
                       io:format("Server  received binary ~p~n",[Bin]),
                       Str=binary_to_term(Bin),
-                      io:format("Server was unpack ~p~n",[Str]),
-                      Relay=lib_misc:string2value,
-                      gen_tcp:send("Send the Relay ~p~n",[Relay]),
+                      io:format("Server(unpack) ~p~n",[Str]),
+                      Relay=Str,
+                      gen_tcp:send(Socket,term_to_binary(Relay)),
                       loop(Socket);
                   {tcp_close,Socket}->
                       io:format("Server socket was closed")

@@ -8,9 +8,11 @@
 %%%-------------------------------------------------------------------
 -module(mul_min_gen_server).
 -behavior(gen_server).
--export([init/1,handle_call/3,handle_cast/2,handle_info/2,terminate/2,code_change/3]).
--export([mul_min/2]).
--export([loop_min/1]).
+-export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
+-export([mul_min/1]).
+-export([loop_min/2]).
+-export([start_link/0]).
+-export([show/0]).
 -author("Administrator").
 
 
@@ -19,9 +21,13 @@
 -export([]).
 
 
-mul_min(L,State)->
+%%开启主进程
+start_link()->
+    gen_server:start({local,?MODULE},?MODULE,[],[])
 
+.
 
+mul_min(L)->
 
     Size=length(L),
 %%    输入列表的元素个数需为3的倍数
@@ -34,54 +40,30 @@ mul_min(L,State)->
 %%    Pid1=gen_server:start_link(?MODULE,[L1],[]),
 %%    Pid2=gen_server:start_link(?MODULE,[L2],[]),
 %%    Pid3=gen_server:start_link(?MODULE,[L3],[]),
-
-    Pid1=spawn(mul_min_gen_server,loop_min,[L1]),
-    Pid2=spawn(mul_min_gen_server,get_newId,[L2]),
-    Pid3=spawn(mul_min_gen_server,get_newId,[L3]),
+    Pid1=spawn(mul_min_gen_server,loop_min,[L1,1]),
+    Pid2=spawn(mul_min_gen_server,loop_min,[L2,2]),
+    Pid3=spawn(mul_min_gen_server,loop_min,[L3,3]),
 
     io:format("pid : ~p~n",[Pid1]),
     io:format("pid : ~p~n",[Pid2]),
-    io:format("pid : ~p~n",[Pid3]),
+    io:format("pid : ~p~n",[Pid3])
 
-
-    receive
-    %%        主进程接收子进程的返回值
-
-        {Pid1,Min1} when State==1 ->put(min,Min1)
-            ,mul_min(L,2);
-
-        {Pid2,Min2} when State==2 ->
-            Temp2 = get(min),
-
-            if
-                Temp2 > Min2 -> put(min,Min2);
-                true->get(min)
-            end,
-            mul_min(L,3);
-
-        {Pid3,Min3} when State==3 ->Min3,
-            Temp3 = get(min),
-            if
-                Temp3 > Min3 -> put(min,Min3);
-                true->get(min)
-            end,
-            io:format("the min of list is :~p~n",[get(min)])
-%%            递归出口
-            ,mul_min(L,0)
-    end.
-
-
-
+.
 
 %%发起计算最小值服务器的远程调用
-loop_min(L)->
-    Min=gen_server:call(?MODULE,{loop_min,L}),
-    io:format("the min: ~p",[Min]).
+loop_min(L,Index)->
+
+    Min=
+        gen_server:call(?MODULE,{loop_min,L,Index})
+    ,
+    io:format("the min: ~p~n",[Min])
+
+.
 
 %%the callback interface
 init([]) ->
-
-    {ok,put(min,0)}.
+    io:format("start the master process ~n"),
+    {ok,ets:new(min_table,[public,named_table,ordered_set])}.
 
 
 handle_cast(_From,State)->
@@ -100,17 +82,16 @@ code_change(_OldVer,State,_Ext)->
 
 
 %%计算所给列表的最小值 -callback
-handle_call({loop_min,L},_From,State)->
+handle_call({loop_min,L,Index},_From,State)->
 
-    receive
-        {From,L}->
-            Min=lists:min(L),
-            put(temp,Min),
-            From ! {self(),Min}
-    end,
-    {reply,get(temp),State}.
+    Min=lists:min(L),
+    ets:insert(min_table,{Index,Min}),
+    {reply,Min,State}.
 
 
+show()->
 
-
-
+    List=ets:tab2list(min_table),
+    [{_,Min1},{_,Min2},{_,Min3}] = List,
+    Result=lists:min([Min1,Min2,Min3]),
+    io:format("the min of list is : ~p~n",[Result]).
