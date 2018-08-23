@@ -17,7 +17,7 @@
 -export([insect/2]).
 -export([concat/2]).
 -export([loop_min/0]).
--export([mul_min/2]).
+-export([mul_min/1]).
 
 
 sum(L)          -> sum(L, 0).
@@ -48,7 +48,34 @@ concat(String1,String2)->
 
 
 
-mul_min(L,State)->
+
+loop_master(0)->
+    io:format("the min of list is :~p~n",[get(min)]);
+
+loop_master(State)->
+
+%%    使用计数器判断进程任务是否执行完毕
+    io:format("the state is ~p~n",[State]),
+    receive
+    %%        主进程接收子进程的返回值
+        {_Pid,Min} ->Min,
+            Temp = get(min),
+            if
+                Temp > Min -> put(min,Min);
+                Temp=:=undefined -> put(min,Min);
+                true->get(min)
+            end,
+
+            loop_master(State-1)
+
+    end.
+
+
+
+
+
+
+mul_min(L)->
 
     Size=length(L),
 %%    输入列表的元素个数需为3的倍数
@@ -63,39 +90,12 @@ mul_min(L,State)->
     Pid1 ! {self(),L1},
     Pid2 ! {self(),L2},
     Pid3 ! {self(),L3},
+    loop_master(3).
 
-    receive
-    %%        主进程接收子进程的返回值
-
-        {Pid1,Min1} when State==1 ->put(min,Min1)
-        ,mul_min(L,2)
-    ;
-
-        {Pid2,Min2} when State==2 ->
-            Temp2 = get(min),
-
-            if
-                Temp2 > Min2 -> put(min,Min2);
-                    true->get(min)
-            end
-        ,mul_min(L,3)
-    ;
-
-        {Pid3,Min3} when State==3 ->Min3,
-            Temp3 = get(min),
-            if
-            Temp3 > Min3 -> put(min,Min3);
-                true->get(min)
-            end,
-            io:format("the min of list is :~p~n",[get(min)])
-%%            递归出口
-        ,mul_min(L,0)
-    end.
 
 
 
 loop_min()->
-
 
     receive
         {From,L}->
