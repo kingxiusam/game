@@ -440,27 +440,47 @@
                 After = os:timestamp(),
                 {now_diff(After, Before), Val}.
 
-
+**dict**:一个键值（Key-Value）字典的实现。
             -opaque dict(Key, Value) :: #dict{segs :: segs(Key, Value)}.
 
+            以键值（Key - Value）对的形式存储在字典里。如果字典里已经存在 Key 的键，则把跟 Key 相关的值替换为 Value:
                 -spec store(Key, Value, Dict1) -> Dict2 when
-                      Dict1 :: dict(Key, Value),
-                      Dict2 :: dict(Key, Value).
-
+                      Dict1 :: dict(Key, Value), //Dict1为原字典
+                      Dict2 :: dict(Key, Value).    //Dict2为新字典
                 store(Key, Val, D0) ->
                     Slot = get_slot(D0, Key),
                     {D1,Ic} = on_bucket(fun (B0) -> store_bkt_val(Key, Val, B0) end,
-                			D0, Slot),
+                            D0, Slot),
                     maybe_expand(D1, Ic).
 
+            初始构造一个新的字典：
+                -spec new() -> dict().
+                new() ->
+                    Empty = mk_seg(?seg_size),
+                    #dict{empty=Empty,segs={Empty}}.
 
+            在指定字典里Dict查找跟键Key关联的值
+                -spec find(Key, Dict) -> {'ok', Value} | 'error' when
+                      Dict :: dict(Key, Value).
+                find(Key, D) ->
+                    Slot = get_slot(D, Key),
+                    Bkt = get_bucket(D, Slot),
+                    find_val(Key, Bkt)
+            调用函数对字典里的键值进行递归遍历操作:
+                -spec fold(Fun, Acc0, Dict) -> Acc1 when
+                      Fun :: fun((Key, Value, AccIn) -> AccOut),
+                      Dict :: dict(Key, Value),
+                      Acc0 :: Acc,
+                      Acc1 :: Acc,
+                      AccIn :: Acc,
+                      AccOut :: Acc.
+                fold(F, Acc, D) -> fold_dict(F, Acc, D).
 
-            -spec new() -> dict().
-            new() ->
-                Empty = mk_seg(?seg_size),
-                #dict{empty=Empty,segs={Empty}}.
+             更新字典里的一个值：(Dict1更新完成之后产生一个新字典Dict2)
+                update(Key, Fun, Dict1) -> Dict2
 
-
+             通过调用更新函数（Fun）来更新指定键 Key 在字典里的值，不同的是，如果指定的键在字典里不存在的话，不会报异常错误，而是用给出的指定初始值（Initial）替换
+                update(Key, Fun, Initial, Dict1) -> Dict2
 
 48.        gen_server:
                 gen_server:start_link 会启动本地服务器
@@ -504,7 +524,7 @@
                 mnesia:force_load_table(ids) 加载表
                 mnesia:start()启动数据库
                 mnesia:create_table 创建表
-                mnesia:create_schema([node()]),创建视图
+                mnesia:create_schema([node()]),创建视图（数据库的初始化操作,参数[node()]为节点列表，node()表示当前节点）
                 mnesia:read(ids,IdType,write),从ids读取指定IdType的数据
                 mnesia:write(ids,NewColumn,write),将记录NewColumn写入ids
                 mnesia:transaction(F) 为操作F提供事务机制
@@ -513,3 +533,6 @@
                     qlc(query list comprehensions)查询列表解析
                     qlc:q([X||X<-mnesia:table(shop)])从mnesia的shop中获取X(每行作为一个X),用这些X构成一个列表
                     qlc:q([{X#shop.item,X#shop.quality}]||X<-mnesia:table(shop)])从mnesia的shop中获取指定列组成的元组,用这些元组构成一个列表
+
+
+
