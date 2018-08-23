@@ -22,6 +22,7 @@
 -export([start_multi_process/0]).
 -export([get_newId/1]).
 -export([start_link/0]).
+-export([stop/0]).
 
 
 
@@ -32,9 +33,16 @@ start_multi_process()->
     spawn(id_generation_server,get_newId,[client]),
     spawn(id_generation_server,get_newId,[client]).
 
+
+
+
+
 %%注册生成自增id的进程
 start_link()->
     gen_server:start({local,?MODULE},?MODULE,[],[]).
+
+stop()->
+    gen_server:call(?MODULE,stop).
 
 get_newId(IdType)->
     mnesia:force_load_table(ids),
@@ -57,6 +65,13 @@ init([]) ->
             io:format("create table error:~p~n",[Reason])
     end,
     {ok,#state{}}.
+
+
+
+
+
+
+
 
 
 handle_cast(_From,State)->
@@ -98,5 +113,7 @@ handle_call({get_newId,IdType},_From,State)->
         _Els->
             Id=1000
     end,
-    {reply,Id,State}
-.
+    {reply,Id,State};
+
+handle_call(stop,_From,State)->
+    {stop,normal,stopped,State}.
