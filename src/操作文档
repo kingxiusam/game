@@ -579,3 +579,33 @@
                           %% Deliberately not documented.
                           ({monitor_nodes, term()}, term()) -> term();
                           (monitor_nodes, term()) -> term().
+
+
+
+
+            iolist_to_binary(IoListOrBinary) -> binary()
+
+                IoListOrBinary = iolist() | binary()
+
+            从IoListOrBinary的integers和binaries生成一个新的二进制数据并返回
+            eg:
+                > Bin1 = <<1,2,3>>.
+                <<1,2,3>>
+                > Bin2 = <<4,5>>.
+                <<4,5>>
+                > Bin3 = <<6>>.
+                <<6>>
+                > iolist_to_binary([Bin1,1,[2,3,Bin2],4|Bin3]).
+                <<1,2,3,1,2,3,4,5,4,6>>
+
+
+            size(Item) -> integer() >= 0
+
+                Item = tuple() | binary()
+
+            返回元组的节点个数 或者 在二进制或者比特串中二进制的个数：
+            eg:
+                > size({morni, mulle, bwange}).
+                3
+                > size(<<11, 22, 33>>).
+                3
