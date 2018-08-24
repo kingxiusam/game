@@ -371,7 +371,7 @@
             此时，如果新生成的进程异常崩溃而发送非正常的退出信号，当前进程也会随之消亡。
             3.模式3:如果我创建的进程崩溃我需要处理错误
             在这种情况下，就要使用:spawn_link和trap_exit,代码如下:
-            process_flag(trap_exit,true),
+            process_flag(trap_exit,true),把普通进程转换为系统进程
             Pid=spawn_link(fun() -> . . . End),
             loop (. . . ).
             1oop(state) ->
@@ -492,6 +492,11 @@
                 start_link(Name, Mod, Args, Options) ->
                     gen:start(?MODULE, link, Name, Mod, Args, Options).
 
+                handle_info 用来处理发给服务器的原生信息      %%服务器与其他进程建立了连接.正在捕捉推出事件，可能突然收到{'EXIT',Pid,What},或者其他进程获取到通用服务器的Pid,给服务器发送信息，诸如此类的消息都将作为Info值传给回调函数。
+                -callback handle_info(Info :: timeout | term(), State :: term()) ->
+                    {noreply, NewState :: term()} |
+                    {noreply, NewState :: term(), timeout() | hibernate} |
+                    {stop, Reason :: term(), NewState :: term()}.
 
 
             gen：
@@ -536,3 +541,41 @@
 
 
 
+        -type priority_level() ::
+              low | normal | high | max.
+              低级 |  普通  | 高级 |最高级
+
+
+
+51.     进程标示操作：
+        -spec process_flag(trap_exit, Boolean) -> OldBoolean when   %%普通进程转换为主进程
+              Boolean :: boolean(),
+              OldBoolean :: boolean();
+
+                          (error_handler, Module) -> OldModule when
+              Module :: atom(),
+              OldModule :: atom();
+
+                          (min_heap_size, MinHeapSize) -> OldMinHeapSize when
+              MinHeapSize :: non_neg_integer(),
+              OldMinHeapSize :: non_neg_integer();
+
+                          (min_bin_vheap_size, MinBinVHeapSize) -> OldMinBinVHeapSize when
+              MinBinVHeapSize :: non_neg_integer(),
+              OldMinBinVHeapSize :: non_neg_integer();
+
+                          (priority, Level) -> OldLevel when        %%将进程设定为指定优先级priority
+              Level :: priority_level(),
+              OldLevel :: priority_level();
+
+                          (save_calls, N) -> OldN when
+              N :: 0..10000,
+              OldN :: 0..10000;
+
+                          (sensitive, Boolean) -> OldBoolean when
+              Boolean :: boolean(),
+              OldBoolean :: boolean();
+
+                          %% Deliberately not documented.
+                          ({monitor_nodes, term()}, term()) -> term();
+                          (monitor_nodes, term()) -> term().
