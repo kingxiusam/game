@@ -22,6 +22,25 @@
     17> lists:filter(P,L).
     [4]
 
+
+
+lists:flatten/1
+将多层嵌套列表转为单层列表
+flatten(DeepList) -> List
+lists:flatten([[1], [2], 3, [4, [5, 6, [7, 8]]]]).
+[1,2,3,4,5,6,7,8]
+
+
+lists:flatten/2
+将多层嵌套列表转为单层列表
+用法：
+flatten(DeepList, Tail) -> List
+
+Tail = [9, 10],
+lists:flatten([[1], [2], 3, [4, [5, 6, [7, 8]]]], Tail).
+[1,2,3,4,5,6,7,8,9,10]
+
+
 6.
     div 取除数
     rem 取余数
