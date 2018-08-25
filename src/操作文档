@@ -400,6 +400,24 @@
 
 
             ets:new(Name, Options)创建新表
+
+            根据匹配模式匹配表里的对象数据:
+            match(Tab, Pattern) -> [Match]
+
+            根据匹配模式 Pattern 匹配 ETS 表 Tab 里的对象数据。
+
+            一个匹配模式也许包含的项值有：绑定部分（Erlang 项），'_' 可以匹配任何 Erlang 项，和匹配变量：'$N'（N>=0）
+
+            函数将返回一个匹配每个对象数据的元素的列表，每个元素是一个绑定变量模式的有序列表。
+            eg:
+                Tab = ets:new(ets_tab, [named_table, bag]),
+                ets:insert(Tab, [{rufsen, dog, 7}, {brunte, horse, 5}, {ludde, dog, 5}]),
+                ets:match(Tab, {'_', '$1', '$2'}).
+                运行结果：
+                [[dog,7],[dog,5],[horse,5]]
+
+
+
             dets:open_file()打开已经存在的表
 
 46.         dets:lookup(TableName,Key)在表中查找匹配key的元组列表[tuple()]
@@ -609,3 +627,9 @@
                 3
                 > size(<<11, 22, 33>>).
                 3
+
+
+52.我们在使用Port时经常要关联其他上下文，以便port给我们发送数据时我们能够根据上下文来处理数据：
+方法：
+    1).使用ets:new(Port,Ctx),较慢
+    2).用Port本身的空间存储Ctx,erlang:port_set_data 和erlang:port_get_data,一步到位，多核free
