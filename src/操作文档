@@ -24,17 +24,50 @@
 
 
 
-lists:flatten/1
-将多层嵌套列表转为单层列表
-flatten(DeepList) -> List
-lists:flatten([[1], [2], 3, [4, [5, 6, [7, 8]]]]).
-[1,2,3,4,5,6,7,8]
+    lists:flatten/1
+    将多层嵌套列表转为单层列表
+    flatten(DeepList) -> List
+    lists:flatten([[1], [2], 3, [4, [5, 6, [7, 8]]]]).
+    [1,2,3,4,5,6,7,8]
 
 
-lists:flatten/2
-将多层嵌套列表转为单层列表
-用法：
-flatten(DeepList, Tail) -> List
+    lists:flatten/2
+    将多层嵌套列表转为单层列表
+    用法：
+    flatten(DeepList, Tail) -> List
+
+    从元组列表里删除第N个与Key匹配的元组列表元素：
+    keydelete(Key, N, TupleList1) -> TupleList2
+
+    从元组列表里查找第N个与Key匹配的元组列表元素
+    keyfind(Key, N, TupleList) -> Tuple | false
+
+    列表里的元素递归调用递归调用函数:
+        列表 List 里的每一个元素和一个累积器（accumulator）参数 Acc0 作为 Fun 的参数被调用执行;
+        并返回一个新的累积器 Acc1 跟列表的下一个元素调用;
+        直到调用完列表里的所有元素，最终返回累积器 Acc 的结果值;
+        获取元素的地址从右到左。
+        foldr(Fun, Acc0, List) -> Acc1
+        eg:
+            lists:foldr(fun(E, AccList) -> [E | AccList] end, [], [a, b, c, d, e]).
+            [a,b,c,d,e]
+
+        列表 List 里的每一个元素按从左向右的顺序;
+        依次跟一个累积器（accumulator）参数 Acc0 作为 Fun 的参数被调用执行;
+        并返回一个新的累积器 Acc1 跟列表的下一个元素调用，直到调用完列表里的所有元素;
+        最终返回累积器 Acc 的结果值;
+        获取元素的地址从左到右。
+        foldl(Fun, Acc0, List) -> Acc1
+        eg:
+            lists:foldl(fun(E, AccList) -> [E | AccList] end, [], [a, b, c, d, e]).
+            [e,d,c,b,a]
+
+    生成一个序列正数列表:
+    lists:seq(From, To) -> Seq    %%生成一个由 From 到 To 的序列正数列表,From、To必须是正数。
+    lists:seq(From, To, Incr) -> Seq %%生成一个由 From 到 To，递增值是 Incr 的序列正数列表，From、To必须是正数。
+
+
+
 
 Tail = [9, 10],
 lists:flatten([[1], [2], 3, [4, [5, 6, [7, 8]]]], Tail).
@@ -269,7 +302,7 @@ lists:flatten([[1], [2], 3, [4, [5, 6, [7, 8]]]], Tail).
                 get_keys(_Val) ->
                     erlang:nif_error(undefined).
 
-                %% erase/0 返回[{Key, Val}],并删除整个进程字典
+                %% erase/0 返回整个进程字典数据[{Key, Val}],并删除它们
                 -spec erase() -> [{Key, Val}] when
                       Key :: term(),
                       Val :: term().
