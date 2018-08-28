@@ -194,6 +194,7 @@ lists:flatten([[1], [2], 3, [4, [5, 6, [7, 8]]]], Tail).
 
 21.
             遇到系统内部错误需要抛出异常时，可以在代码中显式抛出异常: throw(Exception),exit(Exception),erlang.error(Exception)(3个异常标签)。
+            catch Express 当catch原语捕获到异常时，异常信息会转换成描述错误的元组返回{'EXIT',_},undefined,data....
 22.         finally  在try()表达式执行完之后执行
                 eg:
                     46> c(try_code).
@@ -469,6 +470,25 @@ lists:flatten([[1], [2], 3, [4, [5, 6, [7, 8]]]], Tail).
                 [[dog,7],[dog,5],[horse,5]]
 
 
+            ets:foldl/3 对 ETS 数据遍历循环操作
+                定义：-spec foldl(Function, Acc0, Tab) -> Acc1 when
+                      Function :: fun((Element :: term(), AccIn) -> AccOut),
+                      Tab :: tab(),
+                      Acc0 :: term(),
+                      Acc1 :: term(),
+                      AccIn :: term(),
+                      AccOut :: term().
+
+                foldl(F, Accu, T) ->
+                    ets:safe_fixtable(T, true),
+                    First = ets:first(T),
+                    try
+                        do_foldl(F, Accu, First, T)
+                    after
+                	ets:safe_fixtable(T, false)
+                    end.
+
+            对数据遍历的规则跟lists:foldl/3一样
 
             dets:open_file()打开已经存在的表
 
@@ -484,6 +504,7 @@ lists:flatten([[1], [2], 3, [4, [5, 6, [7, 8]]]], Tail).
                             | name | named_table | node | owner | protection
                             | safe_fixed | size | stats | type,
                       Value :: term().
+
 
 
 45.
@@ -685,3 +706,50 @@ lists:flatten([[1], [2], 3, [4, [5, 6, [7, 8]]]], Tail).
 方法：
     1).使用ets:new(Port,Ctx),较慢
     2).用Port本身的空间存储Ctx,erlang:port_set_data 和erlang:port_get_data,一步到位，多核free
+
+
+
+53.队列：由前列表和后列表组成（队列可以看成是由两个栈组成的数据结构）
+            -opaque queue(Item) :: {list(Item), list(Item)}.
+
+            -opaque queue() :: queue(_).
+
+            %% Creation, inspection and conversion
+
+            %% O(1)
+            -spec new() -> queue().
+            new() -> {[],[]}. %{RearList,FrontList}
+
+
+            in(Item, Q1 :: queue(Item)) -> Q2 :: queue(Item)
+            插入元素到Q1队列的后面，返回结果队列Q2.
+            in_r(Item, Q1 :: queue(Item)) -> Q2 :: queue(Item)
+            插入元素到Q1队列的前面，返回结果队列Q2.
+
+
+
+
+54.statistics(Type) -> Res:返回跟指定类型 Type 相关的系统信息
+        context_switches：返回 {ContextSwitches, 0}，参数 ContextSwitches 指的是系统启动到当前上下文切换的总数
+        eg:
+           erlang:statistics(context_switches).
+           {21996,0}
+
+55.检测函数是否输出并被加载
+        function_exported(Module, Function, Arity) -> boolean()
+        检测模块 Module 是否已经加载并且是否包含一个输出的函数 Function/Arity，如果是，则返回 true，否则返回 false。任何的 BIF（用 C 实现而不是 Erlang 实现的函数） 都返回 false。
+
+            erlang:function_exported(lists, dropwhile, 2).
+            结果：
+                true
+
+54.判断是否为引用类型,如果参数 Term 是一个引用（reference）类型，则返回 true，否则返回 false。
+    erlang:is_reference(Term) -> boolean()
+
+    Reference = erlang:make_ref(),
+    erlang:is_reference(Reference).
+    结果：
+        true。
+
+55.获取最近出现异常的堆栈跟踪信息：
+        get_stacktrace() -> [{Module, Function, Arity | Args, Location}].
