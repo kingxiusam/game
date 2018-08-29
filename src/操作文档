@@ -726,7 +726,11 @@ lists:flatten([[1], [2], 3, [4, [5, 6, [7, 8]]]], Tail).
             in_r(Item, Q1 :: queue(Item)) -> Q2 :: queue(Item)
             插入元素到Q1队列的前面，返回结果队列Q2.
 
-
+        返回由N个元素副本Element组成的列表
+            duplicate(N, Element) -> List.
+            eg:
+                lists:duplicate(5, elem_copy).
+                结果：[elem_copy,elem_copy,elem_copy,elem_copy,elem_copy]。
 
 
 54.statistics(Type) -> Res:返回跟指定类型 Type 相关的系统信息
@@ -753,3 +757,11 @@ lists:flatten([[1], [2], 3, [4, [5, 6, [7, 8]]]], Tail).
 
 55.获取最近出现异常的堆栈跟踪信息：
         get_stacktrace() -> [{Module, Function, Arity | Args, Location}].
+
+
+
+56.使用分隔符把字符串分割开来:用指定的分割符把字符串分割成字符串列表
+    string.tokens(String, SeparatorList) -> Tokens
+        eg:
+            string:tokens("a-b-c-d-e","-").
+            结果：["a","b","c","d","e"]。
