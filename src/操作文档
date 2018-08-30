@@ -575,7 +575,7 @@ lists:flatten([[1], [2], 3, [4, [5, 6, [7, 8]]]], Tail).
 
 48.        gen_server:
                 gen_server:start_link 会启动本地服务器
-
+                创建gen_server作为supervision进程树的一部分,函数通过监督者supervisor直接或间接的被调用
                 start_link(Mod, Args, Options) ->
                     gen:start(?MODULE, link, Mod, Args, Options).
 
@@ -588,6 +588,8 @@ lists:flatten([[1], [2], 3, [4, [5, 6, [7, 8]]]], Tail).
                     {noreply, NewState :: term()} |
                     {noreply, NewState :: term(), timeout() | hibernate} |
                     {stop, Reason :: term(), NewState :: term()}.
+
+                gen_server:start创建独立的gen_sever进程，不作为进程树(supervision)的一部分，从而没有监督者supervisor
 
 
             gen：
@@ -765,3 +767,7 @@ lists:flatten([[1], [2], 3, [4, [5, 6, [7, 8]]]], Tail).
         eg:
             string:tokens("a-b-c-d-e","-").
             结果：["a","b","c","d","e"]。
+
+57.在树中查找某个值。
+    lookup(Key, Tree) -> none | {value, Val}
+    在树里查找一个跟键 Key 相关的值，如果存在，则返回 {value, Val}，否则返回 none。
