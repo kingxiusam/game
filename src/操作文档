@@ -23,6 +23,16 @@
     [4]
 
 
+    列表里的所有元素都满足条件返回true，否则返回false：
+    list:all(Predicate, List) -> bool()
+
+    替换元组列表里的值：
+    (从元组列表里查找第N个和Key相同的元素，如果找到用新元素NewTuple替换返回新的元组列表，否则返回原来的元组列表)
+    keyreplace(Key, N, TupleList1, NewTuple) -> TupleList2
+    eg:
+        TupleList = [{a, 1}, {b, 2}, {c, 3}, {d, 4}],
+        lists:keyreplace(b, 1, TupleList, {b, 22}).
+        结果：[{a,1},{b,22},{c,3},{d,4}]
 
     lists:flatten/1
     将多层嵌套列表转为单层列表
@@ -771,3 +781,8 @@ lists:flatten([[1], [2], 3, [4, [5, 6, [7, 8]]]], Tail).
 57.在树中查找某个值。
     lookup(Key, Tree) -> none | {value, Val}
     在树里查找一个跟键 Key 相关的值，如果存在，则返回 {value, Val}，否则返回 none。
+
+58.判断是否为指定的日志类型：
+    erlang.is_record(Term,RecordTag)
+    eg:
+
