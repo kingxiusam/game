@@ -26,6 +26,12 @@
     列表里的所有元素都满足条件返回true，否则返回false：
     list:all(Predicate, List) -> bool()
 
+    把两个列表合成由两个值组成的元组列表
+    lists:zip(List1, List2) -> List3
+    eg:
+        lists:zip([1, 2, 3, 4, 5], [a, b, c, d, e]).
+        结果：[{1,a}.{2,b},{3,c},{4,d},{5,e}]
+
     替换元组列表里的值：
     (从元组列表里查找第N个和Key相同的元素，如果找到用新元素NewTuple替换返回新的元组列表，否则返回原来的元组列表)
     keyreplace(Key, N, TupleList1, NewTuple) -> TupleList2
@@ -786,3 +792,16 @@ lists:flatten([[1], [2], 3, [4, [5, 6, [7, 8]]]], Tail).
     erlang.is_record(Term,RecordTag)
     eg:
 
+60.获取一个列表的第一个元素：
+    erlang:hd().
+
+61.返回列表的尾部,即列表减去第一个元素
+    erlang:tl();
+
+62.
+    proplists:get_value(Key, List) -> term()
+        返回一个键值属性列表 List 里跟 Key 关联的值。如果列表存在这个键的值，则返回该值，否则返回 undefined。
+        其效用跟 proplists:get_value(Key, List, undefined) 一样。
+
+    proplists:get_value(Key, List, Default) -> term()
+    返回一个键值属性列表 List 里跟 Key 关联的值。如果列表存在这个键的值，则返回该值，否则返回默认值 Default。
