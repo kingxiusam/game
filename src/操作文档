@@ -32,6 +32,21 @@
         lists:zip([1, 2, 3, 4, 5], [a, b, c, d, e]).
         结果：[{1,a}.{2,b},{3,c},{4,d},{5,e}]
 
+    在元组列表里存储一个值：
+    keystore(Key, N, TupleList1, NewTuple) -> TupleList2
+    从元组列表TupleList1查找第N个值跟Key是一样的元素，如果找到则用新元组替换，否则将新元组加入到原来的元组列表TupleList1的后面：
+    TupleList = [{a, 1}, {b, 2}, {c, 3}, {d, 4}],
+    lists:keystore(b, 1, TupleList, {b, 22}).
+    结果：
+        [{a,1},{b,22},{c,3},{d,4}]
+
+
+    TupleList = [{a, 1}, {b, 2}, {c, 3}, {d, 4}],
+    lists:keystore(e, 1, TupleList, {e, 5}).
+    结果：
+        [{a,1},{b,2},{c,3},{d,4},{e,5}]
+
+
     替换元组列表里的值：
     (从元组列表里查找第N个和Key相同的元素，如果找到用新元素NewTuple替换返回新的元组列表，否则返回原来的元组列表)
     keyreplace(Key, N, TupleList1, NewTuple) -> TupleList2
