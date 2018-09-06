@@ -62,6 +62,14 @@
     [1,2,3,4,5,6,7,8]
 
 
+    mapfoldl(Fun, Acc0, List1) -> {List2, Acc1}
+    这个函数是 map 和 foldl 函数结合体，把列表 List1 里的每一个元素被函数 Fun 调用;
+    执行后花括号的第一个值作为返回值返回，第 2 个值作为函数 Fun 的参数，用在下一次调用。
+    eg:
+        lists:mapfoldl(fun(X, Sum) -> {2 * X, X + Sum} end, 0, [1, 2, 3, 4, 5]).
+        结果：
+        {[2,4,6,8,10],15}
+
     lists:flatten/2
     将多层嵌套列表转为单层列表
     用法：
