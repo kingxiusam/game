@@ -15,9 +15,19 @@
 -export([caught_try/0]).
 -export([sqrt/1]).
 -export([show_exception_stack/0]).
+-export([test_record/0]).
 
 
-
+-record(r_player_hero, {
+    battle_heros = []          % 上阵武将
+    ,hero_equips = []          % 武将装备
+    ,hero_bag = []  % 武将背包
+    ,open_pos = 1              % 开放的位置
+    ,open_embattle_pos=1       % 布阵位置
+    ,hero_lifestar = []        % 武将命星
+    ,hero_talisman = []         % 武将法宝
+    ,deity_beast = [] %% 神兽
+}).
 
 
 %%异常处理
@@ -57,3 +67,21 @@ show_exception_stack()->try generator_exception(5)
                        catch
                             error:X  -> {X,erlang:get_stacktrace()}
                     end.
+
+
+
+
+
+test_record()->
+    Data=#r_player_hero{
+
+        battle_heros = [1]          % 上阵武将
+        ,hero_equips = [2,3]          % 武将装备
+        ,hero_bag = [3]  % 武将背包
+        ,open_pos = 1              % 开放的位置
+        ,open_embattle_pos=1       % 布阵位置
+        ,hero_lifestar = [1]        % 武将命星
+        ,hero_talisman = [1]         % 武将法宝
+        ,deity_beast = [4] %% 神兽
+    },
+    tuple_to_list(Data).
