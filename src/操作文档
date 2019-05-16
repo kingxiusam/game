@@ -112,6 +112,11 @@
     如果列表里的元素满足给定的条件,则返回true：
         lists:any(Predicate, List) -> bool()
 
+    按从大到小的顺序对列表元素进行排列:
+        lists:sort(List1) -> List2
+
+    根据排序函数 Fun 来对列表 List1 里的元素进行排序:
+        lists:sort(Fun, List1) -> List2
 
 
 6.
@@ -831,3 +836,35 @@
 
     proplists:get_value(Key, List, Default) -> term()
     返回一个键值属性列表 List 里跟 Key 关联的值。如果列表存在这个键的值，则返回该值，否则返回默认值 Default。
+
+63.round(Number) -> integer()
+    返回一个数(Number)四舍五入后的整数值
+
+64.开启一个定时器：
+    erlang:send_after(Time, Dest, Msg) -> TimerRef
+
+65.获取字符在字符串里第一次出现的位置
+    string:chr(String, Character) -> Index.
+
+66.把语法函数转换成匹配规范的伪函数:
+    ets:fun2ms(LiteralFun) -> MatchSpec.
+
+67.判断是否是元组列表的成员
+    lists:keymember(Key, N, TupleList) -> bool().
+
+68.判断表里面是否存在指定的键：
+    ets:member(Tab, Key) -> true | false.
+	
+69.分析crashdump文件
+ crashdump_viewer:start().
+
+
+70.erlang shell 常用命令：
+    f(). %%把所有绑定变量释放掉
+    f(Val). %%把Val变量释放掉
+    v(Line). %%把Line行函数重新执行一次
+    v(-1). %%把前一行的函数重新执行一次
+    rr(Module).%%把Module中的Record加载到Shell中，
+    rr("*/*"). %%把在这个子目录下的所有Module里面的Record给加载到Shell里面
+    rp(Expression).%%把Expression的全部元素给打印到shell里面
+
